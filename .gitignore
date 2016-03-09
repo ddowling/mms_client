@@ -1,0 +1,5 @@
+.svn
+Makefile~
+client_test
+*~
+*.o
