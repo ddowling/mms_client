@@ -10,9 +10,11 @@
  * Description : Test application to drive the mms_client interface to be
  *               used to communication with the mms_logger application.
  */
+#include "mms_client.h"
+
 #include <stdio.h>
 #include <unistd.h>
-#include "mms_client.h"
+#include <math.h>
 
 int main(int argc, char **argv)
 {
@@ -41,6 +43,7 @@ int main(int argc, char **argv)
 			       num_variables,
 			       variable_names);
 
+    double t = 0.0;
     while(true)
     {
 	int i;
@@ -55,8 +58,23 @@ int main(int argc, char **argv)
 	    printf("%s=%g ", variable_names[i], variable_values[i]);
 	printf("\n");
 
+	// Set some values to simulated quantities
+	double range = 2.0 + sin(t);
+	double theta = sin(t*3.0) * 30.0;
+	const char *set_variables[] = {
+	    "pole_range",
+	    "pole_theta"
+        };
+	double set_values[] = {
+	    range,
+	    theta
+        };
+	mms_set_variables(2, set_variables, set_values);
+
 	// Sleep to simulate the polling delay
 	usleep(update_period_seconds * 1e6);
+
+	t += update_period_seconds;
     }
 
     mms_client_disconnect();

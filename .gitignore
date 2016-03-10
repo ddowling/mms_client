@@ -1,5 +1,6 @@
 .svn
 Makefile~
 client_test
+set_test
 *~
 *.o

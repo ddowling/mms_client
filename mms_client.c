@@ -165,15 +165,13 @@ static bool wait_reply(double timeout, int max_reply, char *reply_buf)
     }
 }
 
-static bool send_command(const char *cmd, int max_reply, char *reply_buf)
+static void send_command(const char *cmd)
 {
     write(server_socket, cmd, strlen(cmd));
     write(server_socket, "\r\n", 2);
 
     if (debug_comms)
 	printf("Send:%s\n", cmd);
-
-    return wait_reply(1, max_reply, reply_buf);
 }
 
 bool mms_client_connect(const char *address)
@@ -190,6 +188,8 @@ bool mms_client_connect(const char *address)
 
     if (address == NULL)
 	address = "127.0.0.1";
+
+    // FIXME replace with getaddrinfo
     struct hostent *server = gethostbyname(address);
 
     if (server == NULL)
@@ -218,8 +218,8 @@ bool mms_client_connect(const char *address)
     // Throw away the buffer information after connection
     wait_reply(1, 0, 0);
 
-    send_command("prompt off", 0, 0);
-    send_command("csv on", 0, 0);
+    send_command("prompt off");
+    wait_reply(1, 0, 0);
 
     return true;
 }
@@ -233,9 +233,11 @@ void mms_client_watch_variables(double update_period_seconds,
 
     char send_buf[1024];
     snprintf(send_buf, sizeof(send_buf), "rate %g", update_period_seconds);
-    send_command(send_buf, 0, 0);
+    send_command(send_buf);
+    wait_reply(1, 0, 0);
 
-    send_command("remove *", 0, 0);
+    send_command("remove *");
+    wait_reply(1, 0, 0);
 
     int var_index;
     for (var_index = 0; var_index < num_variables; var_index++)
@@ -245,11 +247,13 @@ void mms_client_watch_variables(double update_period_seconds,
     {
 	snprintf(send_buf, sizeof(send_buf), "add %s",
 		 variable_names[var_index]);
-	send_command(send_buf, 0, 0);
+	send_command(send_buf);
+        wait_reply(1, 0, 0);
     }
 
     char reply_buf[1024];
-    if (!send_command("list", sizeof(reply_buf), reply_buf))
+    send_command("list");
+    if (!wait_reply(1, sizeof(reply_buf), reply_buf))
     {
 	fprintf(stderr, "Cannot decode variable mappings\n");
 	return;
@@ -298,7 +302,10 @@ void mms_client_watch_variables(double update_period_seconds,
 	csv_index++;
     }
 
-    send_command("start", 0, 0);
+    send_command("csv on");
+    wait_reply(1, 0, 0);
+    send_command("start");
+    wait_reply(1, 0, 0);
 }
 
 bool mms_client_get_variables(int num_variables,
@@ -354,11 +361,34 @@ bool mms_client_get_variables(int num_variables,
     return true;
 }
 
+void mms_set_variables(int num_variables,
+                       const char **variable_names,
+                       const double *variable_values)
+{
+    assert(server_socket != -1);
+    assert(num_variables <= MAX_WATCHED_VARIABLES);
+
+    char send_buf[1024];
+    strcpy(send_buf, "set ");
+    int p = strlen(send_buf);
+
+    int i;
+    for (i = 0; i < num_variables; i++)
+    {
+        snprintf(send_buf + p, sizeof(send_buf) - p, "%s=%g ",
+                 variable_names[i], variable_values[i]);
+	p += strlen(send_buf + p);
+	assert(p < sizeof(send_buf));
+    } 
+
+    send_command(send_buf);
+}
+
 void mms_client_disconnect()
 {
     if (server_socket != -1)
     {
-	send_command("stop", 0, 0);
+	send_command("stop");
 
 	close(server_socket);
 	server_socket = -1;
