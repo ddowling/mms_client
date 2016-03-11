@@ -15,7 +15,7 @@
 
 /**
  * @brief Connect to the MMS server application
- * 
+ *
  * Connect to the mms server application at address. If address is NULL then
  * connect to the server on the local system
  *
@@ -23,6 +23,13 @@
  * @return Will return true if successfully connected to the server and false otherwise.
  */
 bool mms_client_connect(const char *address);
+
+/**
+ * @brief Test to see if the client is connected to the server
+ *
+ * @return Return true if connected and false otherwise.
+ */
+bool mms_client_is_connected();
 
 /**
  * @brief Specify which variables to watch
@@ -43,7 +50,7 @@ void mms_client_watch_variables(double update_period_seconds,
 /**
  * @brief Get the current values of all watch variables.
  *
- * Get the current values of all watched variables. This will populate the variable_value array with floating point representation of the variable. 
+ * Get the current values of all watched variables. This will populate the variable_value array with floating point representation of the variable.
  *
  * @param num_variables The number of variables to poll. This should match the number of entries in the variable_values array should should also match what was configured in mms_client_watch_variables.
  * @param variable_values An array of doubles where the values of the watched variables will be copied.
@@ -59,7 +66,7 @@ bool mms_client_get_variables(int num_variables,
  * Set variables in variable_names array to the corresponding values in variable_values array.
  *
  * @param num_variables The number of variables in the variable_names and valiable_values arrays
- * @param variable_name The names of the variables to set
+ * @param variable_names The names of the variables to set
  * @param variable_values The values to set the variables to
  */
 void mms_set_variables(int num_variables,

@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	return 1;
     }
 
-    double update_period_seconds = 0.1;
+    double update_period_seconds = 1.0/15.0;
 
     const char *variable_names[] = {
 	"pole_detected",
@@ -57,6 +57,12 @@ int main(int argc, char **argv)
 
 	// Sleep to simulate the polling delay
 	usleep(update_period_seconds * 1e6);
+
+	if (!mms_client_is_connected())
+	{
+	    printf("Connection failed\n");
+	    break;
+	}
     }
 
     mms_client_disconnect();

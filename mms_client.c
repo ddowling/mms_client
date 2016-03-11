@@ -56,8 +56,27 @@ static bool fill_buffer()
     if (debug_comms)
 	printf("n=%d\n", n);
 
-    if (n <= 0)
+    if (n == 0)
+    {
+	if (debug_comms)
+	    printf("Socket was closed\n");
+	close(server_socket);
+	server_socket = -1;
 	return false;
+    }
+
+    if (n < 0)
+    {
+	if (errno == EWOULDBLOCK || errno == EAGAIN ||
+	    errno == EINTR || errno == ETIMEDOUT)
+	    return false;
+
+	if (debug_comms)
+	    printf("socket read failed : %s\n", strerror(errno));
+	close(server_socket);
+	server_socket = -1;
+	return false;
+    }
 
     buf_end += n;
 
@@ -208,6 +227,10 @@ bool mms_client_connect(const char *address)
     if (connect(server_socket,
 		(struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
 	fprintf(stderr, "client connect failed : %s", strerror(errno));
+
+	close(server_socket);
+	server_socket = -1;
+
 	return false;
     }
 
@@ -222,6 +245,11 @@ bool mms_client_connect(const char *address)
     wait_reply(1, 0, 0);
 
     return true;
+}
+
+bool mms_client_is_connected()
+{
+    return server_socket >= 0;
 }
 
 void mms_client_watch_variables(double update_period_seconds,
