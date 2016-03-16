@@ -398,7 +398,7 @@ void mms_set_variables(int num_variables,
 
     char send_buf[1024];
     strcpy(send_buf, "set ");
-    int p = strlen(send_buf);
+    size_t p = strlen(send_buf);
 
     int i;
     for (i = 0; i < num_variables; i++)
