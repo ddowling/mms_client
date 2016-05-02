@@ -29,6 +29,7 @@ int main(int argc, char **argv)
     }
 
     double update_period_seconds = 1.0/15.0;
+    double sleep_period_seconds = 1.0/50.0;
 
     const char *variable_names[] = {
 	"pole_detected",
@@ -48,7 +49,8 @@ int main(int argc, char **argv)
 	double variable_values[num_variables];
 
 	// Get the values from the server
-	mms_client_get_variables(num_variables, variable_values);
+	bool res = mms_client_get_variables(num_variables, variable_values);
+	printf("res=%d ", res);
 
 	// Show the values
 	for(i = 0; i < num_variables; i++)
@@ -56,7 +58,8 @@ int main(int argc, char **argv)
 	printf("\n");
 
 	// Sleep to simulate the polling delay
-	usleep(update_period_seconds * 1e6);
+	if (sleep_period_seconds != 0)
+	    usleep(sleep_period_seconds * 1.0e6);
 
 	if (!mms_client_is_connected())
 	{

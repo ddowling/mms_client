@@ -348,6 +348,7 @@ bool mms_client_get_variables(int num_variables,
 	variable_values[var_index] = cached_values[var_index];
 
     fill_buffer();
+    bool got_sample = false;
 
     while (true)
     {
@@ -380,13 +381,15 @@ bool mms_client_get_variables(int num_variables,
 	    {
 		variable_values[var_index] = v;
 		cached_values[var_index] = v;
+
+		got_sample = true;
 	    }
 
 	    csv_index++;
 	}
     }
 
-    return true;
+    return got_sample;
 }
 
 void mms_set_variables(int num_variables,
