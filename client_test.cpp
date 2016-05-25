@@ -34,7 +34,13 @@ int main(int argc, char **argv)
     const char *variable_names[] = {
 	"pole_detected",
 	"pole_range",
-	"pole_theta"
+	"pole_theta",
+	"wire_detected",
+	"wire_range",
+	"wire_theta",
+	"ground_detected",
+	"ground_range",
+	"ground_theta"
     };
     int num_variables = sizeof(variable_names)/sizeof(variable_names[0]);
 
